@@ -30,6 +30,7 @@ library(here)
 library(lubridate)
 library(kableExtra)
 library(ggbeeswarm)
+library(effsize)
 ```
 
 # Juvenile Hare Investigation
@@ -42,15 +43,16 @@ In this section, I ...
 #Read in the data
 hares_raw <- read_csv(here("data","bonanza_hares.csv"))
 
-#Add a new date column and a year column using functions from lubridate
+#Filter for juveniles and add a new date column and a year column using functions from lubridate
 hares <- hares_raw %>%
-  mutate(date_new = mdy(date)) %>%
-  mutate(year_new = year(date_new))
+  filter(age == "j") %>% #filter to only include juveniles
+  mutate(date_new = mdy(date)) %>% #make a new date column
+  mutate(year_new = year(date_new)) #add a new year column
 
 #Group the data by year using group_by(), then summarize it to get the counts using summarize()
 hares_annual_counts <- hares %>%
-  group_by(year_new) %>%
-  summarize(count_hares = n())
+  group_by(year_new) %>% #group by year
+  summarize(count_hares = n()) #get the sample size
 
 #Calculate summary statistics to reference in text below
 min_count <- min(hares_annual_counts$count_hares) #calculate the minimum count
@@ -69,7 +71,7 @@ ggplot(data = hares_annual_counts, aes(x = year_new, y = count_hares)) +
 
 ```
 
-Figure 1 shows peaks in annual hare trappings around 1999 and 2009, with a large dip in trappings occurring around 2002. The minimum number of trappings in a given year was `r min_count` and the maximum number of trappings was `r max_count`. The average number of trappings per year is `r mean_count`, and the median number of trappings per year is `r median_count`. There seem to be more consistently higher numbers of trappings in the late 2000s and early 2010s than there are in earlier years. In order to standardize juvenile hare population for future analyses and ensure that these observationsa are consistent with the actual hare population, I would suggest that future data collection occurs on the same days each year with the same number of traps on each day to ensure that the number of trappings per year are calculated in a more uniform way. 
+Figure 1 shows peaks in annual juvenile hare trappings around 1999, 2005, and 2008 with a large dip in trappings occurring around 2002 and 2009. The minimum number of trappings in a given year was `r min_count` and the maximum number of trappings was `r max_count`. The average number of trappings per year is `r mean_count`, and the median number of trappings per year is `r median_count`. There seem to be more consistently higher numbers of trappings in the late 1990s than there are in later years. In order to standardize juvenile hare population for future analyses and ensure that these observations are consistent with the actual hare population, I would suggest that future data collection occurs on the same days each year with the same number of traps on each day to ensure that the number of trappings per year are calculated in a more uniform way. 
 
 ## Juvenile Hare Weights
 
@@ -83,7 +85,7 @@ hares_updated_grid <- hares %>% #use case_when() to rename the sites to be more 
   ))
 
 ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) + #create a beeswarm plot
-  geom_beeswarm(aes(color = sex), cex=0.75) + #color by sex and spread out using cex
+  geom_beeswarm(aes(color = sex), cex=2) + #color by sex and spread out using cex
   theme_bw() + #add a theme
   scale_color_discrete(labels = c("Female","Male","Not Recorded")) + #update the legend labels to be more clear
   labs(x = "Site", 
@@ -105,22 +107,88 @@ hare_weight_summary <- hares_updated_grid %>%
   group_by(grid_new, sex_new) %>% #group the data by grid/site and sex
   summarize(
     mean_weight = round(mean(weight, na.rm = TRUE),2), #calculate mean of weight
-    sd_weight = round(sd(weight, na.rm = TRUE),2) #calculate standard deviation of weight
+    sd_weight = round(sd(weight, na.rm = TRUE),2), #calculate standard deviation of weight
+    count_weight = n() #calculate sample size
   )
 
 hare_weight_summary %>% #make the table easier to read using kable()
-  kable(col.names = c("Site","Sex","Average Weight (g)","Standard Deviation of Weight (g)"),#rename the columns
+  kable(col.names = c("Site","Sex","Average Weight (g)","Standard Deviation of Weight (g)","Sample Size"),#rename the columns
         caption = "Table 1. Summary statistics for the weights of male and female hares by site.") %>% #add a table caption
   kable_styling(bootstrap_options = "striped", full_width = FALSE) #set visual preferences 
 ```
 
-The Bonanza Black Spruce and Bonanza Riparian sites have higher average weights than Bonanza Mature. This is evident in the summary statistics table, as well as by the shape of the beeswarm distributions, which are more heavily weighted to higher weights for the Bonanza Black Sprice and Bonanza Riparian sites. There do not seem to be large differences in weights between male and female hares, as the difference between the average male and female weight at every site is fewer than 80 grams. 
+The Bonanza Black Spruce site has higher average weights than the Bonanza Mature and Bonanza Riparian sites. This is evident in the summary statistics table, as well as by the shape of the beeswarm distributions, which are more heavily weighted to higher weights for the Bonanza Black Spruce site. The other two sites have very similar average weights. However, the Bonanza Black Spruce site has the lowest sample size, so it is possible that the values for this site differ partially because of the smaller sample. The data also seems to indicate higher weights in male juvenile hares than in female juvenile hares, as the average male weights are consistently higher than the female weights at each site. 
 
 ## Juvenile Weight Comparison
 
+```{r}
+#Filter out NA values because we are comparing males to females 
+hares_mf <- hares %>% 
+  filter(sex != "NA") #filter to remove NAs
 
+#Create a table comparing means of male and female juvenile hares
+hares_summary <- hares_mf %>%
+  group_by(sex) %>% #group by sex
+  summarize(mean_weight2 = round(mean(weight, na.rm = TRUE),2), #calculate mean weight
+            sd_weight2 = round(sd(weight, na.rm = TRUE),2), #calculate std. dev. weight
+            count2 = n()) #calculate sample sizes
+```
+
+```{r}
+#Exploratory data analysis to see if male and female weights are normally distributed
+weight_hist <- ggplot(data = hares, aes(x = weight))+
+  geom_bar(aes(color = sex))+
+  facet_wrap(~sex)
+weight_hist #outputs the weight_hist plot
+#The histogram looks relatively normal, indicating that a t-test is probably appropriate.
+
+weight_qq <- ggplot(data = hares_mf) +
+  geom_qq(aes(sample = weight, color = sex))
+weight_qq #outputs the weight_qq plot
+#The qq plot results in mostly linear lines for both sexes, indicating that a t-test is probably appropriate.
+```
+
+```{r}
+#Producing organized table of information
+hares_summary %>% kable(
+  col.names = c("Sex","Average Weight (g)","Standard Deviation of Weight (g)","Sample Size"), #change column names
+  caption = "Table 2. Summary statistics for male and female juvenile hares.") %>% #add caption
+  kable_styling(bootstrap_options = "striped", full_width = FALSE) #set visual preferences 
+```
+
+```{r}
+#Calculating statistics to reference in report
+#1. difference in means 
+dif_means <- hares_summary$mean_weight2[2]-hares_summary$mean_weight2[1]
+
+#2. effect size
+female_weights <- hares_mf %>%
+  filter(sex == "f") %>% #filter for female
+  filter(weight != "NA") %>% #filter out NA values
+  pull(weight) #pull out weight column
+
+male_weights <- hares_mf %>%
+  filter(sex == "m") %>% #filter for male
+  filter(weight != "NA") %>% #filter out NA values
+  pull(weight) #pull out weight column
+
+weight_cohen <- cohen.d(female_weights, male_weights) #run cohen effect size test
+weight_cohen #output cohen effect size 
+
+#3. outcome of unpaired two sample t-test
+weight_t <- t.test(female_weights, male_weights) #run unpaired two sample t test
+weight_t #output t test results
+  
+```
+
+The mean weight for male juvenile hares (`r hares_summary$mean_weight2[2]`) is `r dif_means` g greater than that for female juvenile hares (`r hares_summary$mean_weight2[2]`). The effect size for the means is small (Cohen's d = `r round(weight_cohen$estimate,2)`) and the difference in means is significant (two-sample t-test, t = `r round(weight_t$statistic,2)`, p = `r round(weight_t$p.value,3)`).
 
 ## Juvenile Weight and Hind Foot Length
+
+```{r}
+
+```
+
 
 # Summary
 
