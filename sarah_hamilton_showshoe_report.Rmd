@@ -75,27 +75,50 @@ Figure 1 shows peaks in annual hare trappings around 1999 and 2009, with a large
 
 ```{r}
 #Create a plot of juvenile hare weights by sex and grid 
-hares_updated_grid <- hares %>%
+hares_updated_grid <- hares %>% #use case_when() to rename the sites to be more clear
   mutate(grid_new = case_when(
     grid == "bonbs" ~ "Bonanza Black Spruce",
     grid == "bonmat" ~ "Bonanza Mature",
     grid == "bonrip" ~ "Bonanza Riparian"
   ))
 
-ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) +
-  geom_beeswarm(aes(color = sex), cex=0.75) +
-  theme_bw() +
-  scale_color_discrete(labels = c("Female","Male","Not Recorded")) +
+ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) + #create a beeswarm plot
+  geom_beeswarm(aes(color = sex), cex=0.75) + #color by sex and spread out using cex
+  theme_bw() + #add a theme
+  scale_color_discrete(labels = c("Female","Male","Not Recorded")) + #update the legend labels to be more clear
   labs(x = "Site", 
        y = "Weight (g)",  
        title = "Juvenile Hare Weight by Site", 
-       color = "Sex")
-
-#Create a table of summary statistics of juvenile hare weights by sex and grid
+       color = "Sex",
+       caption = "Figure 2. Juvenile Hare Weight by Site. The site at which the observations were collected is plotted on the x \n axis, with the weight in grams plotted on the y axis. The colors indicate the sex of the trapped hare, with red indicating \n a female hare, blue indicating a male hare, and gray indicating that the sex of the hare was not recorded.") #add labels and caption
 ```
 
 
+```{r}
+#Create a table of summary statistics of juvenile hare weights by sex and grid
+hare_weight_summary <- hares_updated_grid %>%
+  mutate(sex_new = case_when( #use case_when() to update the sex names for the table
+    sex == "f" ~ "Female",
+    sex == "m" ~ "Male",
+    sex == "NA" ~ "Not Recorded"
+  )) %>%
+  group_by(grid_new, sex_new) %>% #group the data by grid/site and sex
+  summarize(
+    mean_weight = round(mean(weight, na.rm = TRUE),2), #calculate mean of weight
+    sd_weight = round(sd(weight, na.rm = TRUE),2) #calculate standard deviation of weight
+  )
+
+hare_weight_summary %>% #make the table easier to read using kable()
+  kable(col.names = c("Site","Sex","Average Weight (g)","Standard Deviation of Weight (g)"),#rename the columns
+        caption = "Table 1. Summary statistics for the weights of male and female hares by site.") %>% #add a table caption
+  kable_styling(bootstrap_options = "striped", full_width = FALSE) #set visual preferences 
+```
+
+The Bonanza Black Spruce and Bonanza Riparian sites have higher average weights than Bonanza Mature. This is evident in the summary statistics table, as well as by the shape of the beeswarm distributions, which are more heavily weighted to higher weights for the Bonanza Black Sprice and Bonanza Riparian sites. There do not seem to be large differences in weights between male and female hares, as the difference between the average male and female weight at every site is fewer than 80 grams. 
+
 ## Juvenile Weight Comparison
+
+
 
 ## Juvenile Weight and Hind Foot Length
 
