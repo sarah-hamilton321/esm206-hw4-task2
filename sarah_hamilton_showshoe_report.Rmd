@@ -1,0 +1,109 @@
+---
+title: "ESM 206 Assignment 4 Task 2 Bonanza Creek"
+author: "Sarah Hamilton"
+date: "11/6/2021"
+output: 
+  html_document: 
+    toc: yes
+    theme: cerulean
+    number_sections: yes
+    code_folding: hide
+---
+
+# Introduction
+
+DO THIS STILL******* A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report.
+
+# Data and Analysis
+
+DO THIS STILL******* A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.
+
+Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
+
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(janitor)
+library(here)
+library(lubridate)
+library(kableExtra)
+library(ggbeeswarm)
+```
+
+# Juvenile Hare Investigation
+
+In this section, I ...
+
+## Annual Juvenile Hare Trap Counts
+
+```{r}
+#Read in the data
+hares_raw <- read_csv(here("data","bonanza_hares.csv"))
+
+#Add a new date column and a year column using functions from lubridate
+hares <- hares_raw %>%
+  mutate(date_new = mdy(date)) %>%
+  mutate(year_new = year(date_new))
+
+#Group the data by year using group_by(), then summarize it to get the counts using summarize()
+hares_annual_counts <- hares %>%
+  group_by(year_new) %>%
+  summarize(count_hares = n())
+
+#Calculate summary statistics to reference in text below
+min_count <- min(hares_annual_counts$count_hares) #calculate the minimum count
+max_count <- max(hares_annual_counts$count_hares) #calculate the maximum count
+mean_count <- round(mean(hares_annual_counts$count_hares)) #calculate the mean count
+median_count <- median(hares_annual_counts$count_hares) #calculate the median count
+
+#Plot the count of hares by year using ggplot() and geom_col()
+ggplot(data = hares_annual_counts, aes(x = year_new, y = count_hares)) +
+  geom_col() +
+  theme_minimal() +
+  labs(x = "Year", 
+       y = "Number of Juvenile Hare Trappings", 
+       title = "Juvenile Hare Trappings Over Time",
+       caption = "Figure 1. Juvenile Hare Trappings Over Time. The x axis shows the year of data collection, and the y axis shows \n the total number of hare trappings.")
+
+```
+
+Figure 1 shows peaks in annual hare trappings around 1999 and 2009, with a large dip in trappings occurring around 2002. The minimum number of trappings in a given year was `r min_count` and the maximum number of trappings was `r max_count`. The average number of trappings per year is `r mean_count`, and the median number of trappings per year is `r median_count`. There seem to be more consistently higher numbers of trappings in the late 2000s and early 2010s than there are in earlier years. In order to standardize juvenile hare population for future analyses and ensure that these observationsa are consistent with the actual hare population, I would suggest that future data collection occurs on the same days each year with the same number of traps on each day to ensure that the number of trappings per year are calculated in a more uniform way. 
+
+## Juvenile Hare Weights
+
+```{r}
+#Create a plot of juvenile hare weights by sex and grid 
+hares_updated_grid <- hares %>%
+  mutate(grid_new = case_when(
+    grid == "bonbs" ~ "Bonanza Black Spruce",
+    grid == "bonmat" ~ "Bonanza Mature",
+    grid == "bonrip" ~ "Bonanza Riparian"
+  ))
+
+ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) +
+  geom_beeswarm(aes(color = sex), cex=0.75) +
+  theme_bw() +
+  scale_color_discrete(labels = c("Female","Male","Not Recorded")) +
+  labs(x = "Site", 
+       y = "Weight (g)",  
+       title = "Juvenile Hare Weight by Site", 
+       color = "Sex")
+
+#Create a table of summary statistics of juvenile hare weights by sex and grid
+```
+
+
+## Juvenile Weight Comparison
+
+## Juvenile Weight and Hind Foot Length
+
+# Summary
+
+# Citations
+
+
+
+
+
