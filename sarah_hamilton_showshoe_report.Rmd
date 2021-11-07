@@ -18,8 +18,6 @@ DO THIS STILL******* A 4 - 5 sentence "mini-introduction" to what this study is 
 
 DO THIS STILL******* A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.
 
-Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
-
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -31,11 +29,13 @@ library(lubridate)
 library(kableExtra)
 library(ggbeeswarm)
 library(effsize)
+library(broom)
+library(equatiomatic)
 ```
 
 # Juvenile Hare Investigation
 
-In this section, I ...
+In this section, I conduct analyses of juvenile hare trap counts at different sites, juvenile hare weights between sexes, and the relationship between juvenile weights and hind foot length. 
 
 ## Annual Juvenile Hare Trap Counts
 
@@ -124,17 +124,20 @@ The Bonanza Black Spruce site has higher average weights than the Bonanza Mature
 ```{r}
 #Filter out NA values because we are comparing males to females 
 hares_mf <- hares %>% 
-  filter(sex != "NA") #filter to remove NAs
+  filter(sex != "NA") %>% #filter to remove NAs
+  mutate(sex_new = case_when( #use case_when() to update the sex names for the table
+    sex == "f" ~ "Female",
+    sex == "m" ~ "Male"))
 
 #Create a table comparing means of male and female juvenile hares
 hares_summary <- hares_mf %>%
-  group_by(sex) %>% #group by sex
+  group_by(sex_new) %>% #group by sex
   summarize(mean_weight2 = round(mean(weight, na.rm = TRUE),2), #calculate mean weight
             sd_weight2 = round(sd(weight, na.rm = TRUE),2), #calculate std. dev. weight
             count2 = n()) #calculate sample sizes
 ```
 
-```{r}
+```{r include = FALSE}
 #Exploratory data analysis to see if male and female weights are normally distributed
 weight_hist <- ggplot(data = hares, aes(x = weight))+
   geom_bar(aes(color = sex))+
@@ -181,18 +184,41 @@ weight_t #output t test results
   
 ```
 
-The mean weight for male juvenile hares (`r hares_summary$mean_weight2[2]`) is `r dif_means` g greater than that for female juvenile hares (`r hares_summary$mean_weight2[2]`). The effect size for the means is small (Cohen's d = `r round(weight_cohen$estimate,2)`) and the difference in means is significant (two-sample t-test, t = `r round(weight_t$statistic,2)`, p = `r round(weight_t$p.value,3)`).
+The mean weight for male juvenile hares (`r hares_summary$mean_weight2[2]` g) is `r dif_means` g greater than that for female juvenile hares (`r hares_summary$mean_weight2[2]` g). The effect size for the means is small (Cohen's d = `r round(weight_cohen$estimate,2)`) and the difference in means is significant (two-sample t-test, t = `r round(weight_t$statistic,2)`, p = `r round(weight_t$p.value,3)`).
 
 ## Juvenile Weight and Hind Foot Length
 
 ```{r}
-
+ggplot(data = hares, aes(x = hindft, y = weight)) + #make a plot of weight vs. hind foot length
+  geom_point() + #scatter plot
+  theme_bw() + #add a theme
+  geom_smooth(method = "lm") + #add a linear regression line
+  labs(x = "Hind Foot Length (mm)", y = "Weight (g)", title = "Juvenile Hare Weight versus Hind Foot Length",
+       caption = "Figure 3. Juvenile hare weight versus hind foot length. The juvenile hares' hind foot length \n is plotted on the x axis in millimeters, and their weights in grams are plotted on the y axis.") #add labels and a caption
 ```
 
+```{r}
+hare_lm <-lm(weight ~ hindft, data = hares) #find linear regression model for weight as a function of hind foot length
+#hare_lm #output lm model
+
+hare_lm_tidy <- tidy(hare_lm) #get a tidy output of lm()
+#hare_lm_tidy #output lm tidy model
+
+hare_lm_glance <- glance(hare_lm) #get output of model fit and statistical significance
+#hare_lm_glance #output lm glance 
+
+extract_eq(model = hare_lm, use_coefs = TRUE) #return the model equation in LaTeX
+```
+
+The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is ________. The assumption of _____ may be a concern for this linear regression model because _________.
 
 # Summary
 
+DO THIS STILL***** Include a very short summary describing your main findings from your juvenile hares exploration (bullet points are fine)
+
 # Citations
+
+Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
 
 
