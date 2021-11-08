@@ -10,18 +10,20 @@ output:
     code_folding: hide
 ---
 
-# Introduction
+# Overview
 
-DO THIS STILL******* A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report.
+## Introduction
 
-# Data and Analysis
+This report provides an exploratory analysis of juvenile snowshoe hares in the Bonanza Creek Long Term Ecological Research Site (Bonanza Creek LTER, 2021). The report first explores total counts of juvenile hare trappings over time. It then explores juvenile hare weight by sex at three different sites at Bonanza Creek. Finally, it explores the relationship between juvenile hare hind foot length and weight. 
 
-DO THIS STILL******* A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.
+## Data and Analysis
+
+The data used in this report comes from the Bonanza Creek Long Term Ecological Research Site, which is run by the University of Alaska Fairbanks (Bonanza Creek LTER, 2021). For this analysis, only juvenile hares were included. In section 2.1, the annual juvenile hare trap counts were plotted over time on a histogram. In section 2.2, a beeswarm plot was used to visualize the weight of juvenile hares at each site of Bonanza Creek. In section 2.3, a basic summary statistics table was made to clearly compare the weights of female and male juvenile hares. In section 2.4, a linear regression model was run on a scatterplot of weight versus hind foot length to determine the relationship between the two variables. 
 
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
-
+#Install the necessary packages 
 library(tidyverse)
 library(janitor)
 library(here)
@@ -35,11 +37,11 @@ library(equatiomatic)
 
 # Juvenile Hare Investigation
 
-In this section, I conduct analyses of juvenile hare trap counts at different sites, juvenile hare weights between sexes, and the relationship between juvenile weights and hind foot length. 
+Analyses of juvenile hare trap counts at different sites, juvenile hare weights between sexes, and the relationship between juvenile weights and hind foot length are included below. 
 
 ## Annual Juvenile Hare Trap Counts
 
-```{r}
+```{r fig.align='center'}
 #Read in the data
 hares_raw <- read_csv(here("data","bonanza_hares.csv"))
 
@@ -75,7 +77,7 @@ Figure 1 shows peaks in annual juvenile hare trappings around 1999, 2005, and 20
 
 ## Juvenile Hare Weights
 
-```{r}
+```{r fig.align='center'}
 #Create a plot of juvenile hare weights by sex and grid 
 hares_updated_grid <- hares %>% #use case_when() to rename the sites to be more clear
   mutate(grid_new = case_when(
@@ -92,11 +94,11 @@ ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) + #create a bees
        y = "Weight (g)",  
        title = "Juvenile Hare Weight by Site", 
        color = "Sex",
-       caption = "Figure 2. Juvenile Hare Weight by Site. The site at which the observations were collected is plotted on the x \n axis, with the weight in grams plotted on the y axis. The colors indicate the sex of the trapped hare, with red indicating \n a female hare, blue indicating a male hare, and gray indicating that the sex of the hare was not recorded.") #add labels and caption
+       caption = "Figure 2. Juvenile Hare Weight by Site. The site at which the observations were collected \n is plotted on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the sex of the trapped hare, with red indicating a female hare, blue \n indicating a male hare, and gray indicating that the sex of the hare was not recorded.") #add labels and caption
 ```
 
 
-```{r}
+```{r fig.align='center'}
 #Create a table of summary statistics of juvenile hare weights by sex and grid
 hare_weight_summary <- hares_updated_grid %>%
   mutate(sex_new = case_when( #use case_when() to update the sex names for the table
@@ -151,7 +153,7 @@ weight_qq #outputs the weight_qq plot
 #The qq plot results in mostly linear lines for both sexes, indicating that a t-test is probably appropriate.
 ```
 
-```{r}
+```{r fig.align='center'}
 #Producing organized table of information
 hares_summary %>% kable(
   col.names = c("Sex","Average Weight (g)","Standard Deviation of Weight (g)","Sample Size"), #change column names
@@ -176,11 +178,11 @@ male_weights <- hares_mf %>%
   pull(weight) #pull out weight column
 
 weight_cohen <- cohen.d(female_weights, male_weights) #run cohen effect size test
-weight_cohen #output cohen effect size 
+#weight_cohen #output cohen effect size 
 
 #3. outcome of unpaired two sample t-test
 weight_t <- t.test(female_weights, male_weights) #run unpaired two sample t test
-weight_t #output t test results
+#weight_t #output t test results
   
 ```
 
@@ -188,7 +190,7 @@ The mean weight for male juvenile hares (`r hares_summary$mean_weight2[2]` g) is
 
 ## Juvenile Weight and Hind Foot Length
 
-```{r}
+```{r fig.align='center'}
 ggplot(data = hares, aes(x = hindft, y = weight)) + #make a plot of weight vs. hind foot length
   geom_point() + #scatter plot
   theme_bw() + #add a theme
@@ -214,7 +216,15 @@ The output of this linear regression indicates that on average, for every 1 mm i
 
 # Summary
 
-DO THIS STILL***** Include a very short summary describing your main findings from your juvenile hares exploration (bullet points are fine)
+This analysis resulted in the following findings:
+
+- The total number of juvenile hare trappings fluctuated greatly over time, peaking in 1999, 2005, and 2011. The average number of juvenile hare trappings per year is 32.
+
+- The Bonanza Black Spruce site had the highest average juvenile hare weight.
+
+- Male juvenile hares consistently had higher average weights than female juvenile hares at every site. The mean weight for males was 90 grams greater than that for female hares.
+
+- A regression model for weight versus hind foot length indicated that about 30% of the variance in weight is predictable from hind foot length. 
 
 # Citations
 
