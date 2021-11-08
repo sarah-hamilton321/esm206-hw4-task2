@@ -12,6 +12,8 @@ output:
 
 # Overview
 
+This section contains an overview of what is contained in this report. 
+
 ## Introduction
 
 This report provides an exploratory analysis of juvenile snowshoe hares in the Bonanza Creek Long Term Ecological Research Site (Bonanza Creek LTER, 2021). The report first explores total counts of juvenile hare trappings over time. It then explores juvenile hare weight by sex at three different sites at Bonanza Creek. Finally, it explores the relationship between juvenile hare hind foot length and weight. 
@@ -85,29 +87,29 @@ hares_updated_grid <- hares %>% #use case_when() to rename the sites to be more 
     grid == "bonbs" ~ "Bonanza Black Spruce",
     grid == "bonmat" ~ "Bonanza Mature",
     grid == "bonrip" ~ "Bonanza Riparian"
+  )) %>%
+  mutate(sex_new = case_when( #use case_when() to update the sex names for the table
+    sex == "f" ~ "Female",
+    sex == "m" ~ "Male",
+    sex == "NA" ~ "Not Recorded"
   ))
 
-ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) + #create a beeswarm plot
-  geom_beeswarm(aes(color = sex), cex=2) + #color by sex and spread out using cex
+
+ggplot(data = hares_updated_grid,aes(x = sex_new, y = weight)) + #create a beeswarm plot
+  geom_beeswarm(aes(color = grid_new), cex=2, show.legend = FALSE) + #color by sex and spread out using cex
   theme_bw() + #add a theme
-  scale_color_discrete(labels = c("Female","Male","Not Recorded")) + #update the legend labels to be more clear
-  labs(x = "Site", 
+  labs(x = "Sex", 
        y = "Weight (g)",  
        title = "Juvenile Hare Weight by Site", 
-       color = "Sex",
-       caption = "Figure 2. Juvenile Hare Weight by Site. The site at which the observations were collected \n is plotted on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the sex of the trapped hare, with red indicating a female hare, blue \n indicating a male hare, and gray indicating that the sex of the hare was not recorded.") + #add labels and caption
-  theme(plot.caption = element_text(hjust=0.5)) #center the caption
+       caption = "Figure 2. Juvenile Hare Weight by Site and Sex. The sex of the observations collected are plotted \n on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the site of the trapped hare.") + #add labels and caption
+  theme(plot.caption = element_text(hjust=0.5)) + #center the caption
+  facet_wrap(~grid_new)
 ```
 
 
 ```{r fig.align='center'}
 #Create a table of summary statistics of juvenile hare weights by sex and grid
 hare_weight_summary <- hares_updated_grid %>%
-  mutate(sex_new = case_when( #use case_when() to update the sex names for the table
-    sex == "f" ~ "Female",
-    sex == "m" ~ "Male",
-    sex == "NA" ~ "Not Recorded"
-  )) %>%
   group_by(grid_new, sex_new) %>% #group the data by grid/site and sex
   summarize(
     mean_weight = round(mean(weight, na.rm = TRUE),2), #calculate mean of weight
@@ -203,21 +205,27 @@ ggplot(data = hares, aes(x = hindft, y = weight)) + #make a plot of weight vs. h
 ```
 
 ```{r}
+#Find linear regression model
 hare_lm <-lm(weight ~ hindft, data = hares) #find linear regression model for weight as a function of hind foot length
 #hare_lm #output lm model
 
+#Get tidy output of model
 hare_lm_tidy <- tidy(hare_lm) #get a tidy output of lm()
 #hare_lm_tidy #output lm tidy model
 
+#Get output of model 
 hare_lm_glance <- glance(hare_lm) #get output of model fit and statistical significance
 #hare_lm_glance #output lm glance 
 
+#Output thelinear regression model 
 extract_eq(model = hare_lm, use_coefs = TRUE) #return the model equation in LaTeX
 
-pearson_r_hares <- sqrt(hare_lm_glance$r.squared)
+#Get Pearson's R correlation
+hare_pearson_test <- cor.test(female_weights[1:163], male_weights) #WHAT TO DO WHEN DIF LENGTHS????
+hares_pearson_r <- hare_pearson_test$estimate
 ```
 
-The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(pearson_r_hares,2)`. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence.
+The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(hares_pearson_r,2)` indicating that the weight of a hare is weakly influenced by its hind foot length. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence due to the low R^2 and Pearson's r correlation values, and the limitations to the linear regression model.
 
 # Summary
 
@@ -229,7 +237,7 @@ This analysis resulted in the following findings:
 
 - Male juvenile hares consistently had higher average weights than female juvenile hares at every site. The mean weight for males was 90 grams greater than that for female hares.
 
-- A regression model for weight versus hind foot length indicated that about 30% of the variance in weight is predictable from hind foot length. 
+- A regression model for weight versus hind foot length indicated that about 30% of the variance in weight is predictable from hind foot length, and a Pearson's r correlation test indicated weak correlation between the two variables. 
 
 # Citations
 
