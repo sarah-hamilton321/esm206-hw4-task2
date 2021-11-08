@@ -69,7 +69,8 @@ ggplot(data = hares_annual_counts, aes(x = year_new, y = count_hares)) +
   labs(x = "Year", 
        y = "Number of Juvenile Hare Trappings", 
        title = "Juvenile Hare Trappings Over Time",
-       caption = "Figure 1. Juvenile Hare Trappings Over Time. The x axis shows the year of data collection, and the y axis shows \n the total number of hare trappings.")
+       caption = "Figure 1. Juvenile Hare Trappings Over Time. The x axis shows the year of data collection, \n and the y axis shows the total number of hare trappings.") +
+  theme(plot.caption = element_text(hjust=0.5)) #center the caption
 
 ```
 
@@ -94,7 +95,8 @@ ggplot(data = hares_updated_grid,aes(x = grid_new, y = weight)) + #create a bees
        y = "Weight (g)",  
        title = "Juvenile Hare Weight by Site", 
        color = "Sex",
-       caption = "Figure 2. Juvenile Hare Weight by Site. The site at which the observations were collected \n is plotted on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the sex of the trapped hare, with red indicating a female hare, blue \n indicating a male hare, and gray indicating that the sex of the hare was not recorded.") #add labels and caption
+       caption = "Figure 2. Juvenile Hare Weight by Site. The site at which the observations were collected \n is plotted on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the sex of the trapped hare, with red indicating a female hare, blue \n indicating a male hare, and gray indicating that the sex of the hare was not recorded.") + #add labels and caption
+  theme(plot.caption = element_text(hjust=0.5)) #center the caption
 ```
 
 
@@ -196,7 +198,8 @@ ggplot(data = hares, aes(x = hindft, y = weight)) + #make a plot of weight vs. h
   theme_bw() + #add a theme
   geom_smooth(method = "lm") + #add a linear regression line
   labs(x = "Hind Foot Length (mm)", y = "Weight (g)", title = "Juvenile Hare Weight versus Hind Foot Length",
-       caption = "Figure 3. Juvenile hare weight versus hind foot length. The juvenile hares' hind foot length \n is plotted on the x axis in millimeters, and their weights in grams are plotted on the y axis.") #add labels and a caption
+       caption = "Figure 3. Juvenile hare weight versus hind foot length. The juvenile hares' hind foot length \n is plotted on the x axis in millimeters, and their weights in grams are plotted on the y axis.") + #add labels and a caption
+  theme(plot.caption = element_text(hjust=0.5)) #center the caption
 ```
 
 ```{r}
@@ -210,9 +213,11 @@ hare_lm_glance <- glance(hare_lm) #get output of model fit and statistical signi
 #hare_lm_glance #output lm glance 
 
 extract_eq(model = hare_lm, use_coefs = TRUE) #return the model equation in LaTeX
+
+pearson_r_hares <- sqrt(hare_lm_glance$r.squared)
 ```
 
-The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is ________. The assumption of _____ may be a concern for this linear regression model because _________.
+The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(pearson_r_hares,2)`. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence.
 
 # Summary
 
