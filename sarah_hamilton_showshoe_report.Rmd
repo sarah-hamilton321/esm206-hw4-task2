@@ -221,11 +221,11 @@ hare_lm_glance <- glance(hare_lm) #get output of model fit and statistical signi
 extract_eq(model = hare_lm, use_coefs = TRUE) #return the model equation in LaTeX
 
 #Get Pearson's R correlation
-hare_pearson_test <- cor.test(female_weights[1:163], male_weights) #WHAT TO DO WHEN DIF LENGTHS????
-hares_pearson_r <- hare_pearson_test$estimate
+hare_pearson_test <- cor.test(hares$hindft, hares$weight) 
+hares_pearson_r <- hare_pearson_test$estimate #pull out the pearson's r value
 ```
 
-The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(hares_pearson_r,2)` indicating that the weight of a hare is weakly influenced by its hind foot length. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence due to the low R^2 and Pearson's r correlation values, and the limitations to the linear regression model.
+The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(hares_pearson_r,2)` indicating that the weight of a hare is moderately influenced by its hind foot length. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence due to the low R^2 and moderate Pearson's r correlation values, and the limitations to the linear regression model.
 
 # Summary
 
