@@ -16,11 +16,11 @@ This section contains an overview of what is contained in this report.
 
 ## Introduction
 
-This report provides an exploratory analysis of juvenile snowshoe hares in the Bonanza Creek Long Term Ecological Research Site (Bonanza Creek LTER, 2021). The report first explores total counts of juvenile hare trappings over time. It then explores juvenile hare weight by sex at three different sites at Bonanza Creek. Finally, it explores the relationship between juvenile hare hind foot length and weight. 
+This report provides an exploratory analysis of juvenile snowshoe hares in the Bonanza Creek Long Term Ecological Research Site (Bonanza Creek LTER, 2021). The report first explores total counts of juvenile hare trappings over the years 1999 to 2012. It then explores juvenile hare weight by sex at three different sites at Bonanza Creek where juvenile hares were found. Finally, it explores the relationship between juvenile hare hind foot length and weight. 
 
 ## Data and Analysis
 
-The data used in this report comes from the Bonanza Creek Long Term Ecological Research Site, which is run by the University of Alaska Fairbanks (Bonanza Creek LTER, 2021). For this analysis, only juvenile hares were included. In section 2.1, the annual juvenile hare trap counts were plotted over time on a histogram. In section 2.2, a beeswarm plot was used to visualize the weight of juvenile hares at each site of Bonanza Creek. In section 2.3, a basic summary statistics table was made to clearly compare the weights of female and male juvenile hares. In section 2.4, a linear regression model was run on a scatterplot of weight versus hind foot length to determine the relationship between the two variables. 
+The data used in this report comes from the Bonanza Creek Long Term Ecological Research Site, which is run by the University of Alaska Fairbanks (Bonanza Creek LTER, 2021). For this analysis, only juvenile hares were included. In section 2.1, the annual juvenile hare trap counts were plotted over time on a histogram. In section 2.2, a beeswarm plot was used to visualize the weight of juvenile hares at each site of Bonanza Creek. In section 2.3, a basic summary statistics table was made to clearly compare the weights of female and male juvenile hares, and Cohen's d effect size test and a two-sample unpaired t-test were run to further compare the weights. In section 2.4, a linear regression model was run on a scatterplot of weight versus hind foot length to determine the relationship between the two variables, and a Pearson's r correlation test was also run to further investigate the correlation between these two variables. 
 
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
@@ -70,8 +70,7 @@ ggplot(data = hares_annual_counts, aes(x = year_new, y = count_hares)) +
   theme_minimal() +
   labs(x = "Year", 
        y = "Number of Juvenile Hare Trappings", 
-       title = "Juvenile Hare Trappings Over Time",
-       caption = "Figure 1. Juvenile Hare Trappings Over Time. The x axis shows the year of data collection, \n and the y axis shows the total number of hare trappings.") +
+       caption = "Figure 1. Juvenile Hare Trappings Over Time. The x axis shows the year of data collection, \n and the y axis shows the total number of hare trappings. Data: Bonanza Creek LTER, 2021") +
   theme(plot.caption = element_text(hjust=0.5)) #center the caption
 
 ```
@@ -100,8 +99,7 @@ ggplot(data = hares_updated_grid,aes(x = sex_new, y = weight)) + #create a beesw
   theme_bw() + #add a theme
   labs(x = "Sex", 
        y = "Weight (g)",  
-       title = "Juvenile Hare Weight by Site", 
-       caption = "Figure 2. Juvenile Hare Weight by Site and Sex. The sex of the observations collected are plotted \n on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the site of the trapped hare.") + #add labels and caption
+       caption = "Figure 2. Juvenile Hare Weight by Site and Sex. The sex of the observations collected are plotted \n on the x axis, with the weight in grams plotted on the y axis. \n The colors indicate the site of the trapped hare. Data: Bonanza Creek LTER, 2021") + #add labels and caption
   theme(plot.caption = element_text(hjust=0.5)) + #center the caption
   facet_wrap(~grid_new)
 ```
@@ -119,11 +117,11 @@ hare_weight_summary <- hares_updated_grid %>%
 
 hare_weight_summary %>% #make the table easier to read using kable()
   kable(col.names = c("Site","Sex","Average Weight (g)","Standard Deviation of Weight (g)","Sample Size"),#rename the columns
-        caption = "Table 1. Summary statistics for the weights of male and female hares by site.") %>% #add a table caption
+        caption = "Table 1. Summary statistics for the weights of male and female hares by site. Data: Bonanza Creek LTER, 2021") %>% #add a table caption
   kable_styling(bootstrap_options = "striped", full_width = FALSE) #set visual preferences 
 ```
 
-The Bonanza Black Spruce site has higher average weights than the Bonanza Mature and Bonanza Riparian sites. This is evident in the summary statistics table, as well as by the shape of the beeswarm distributions, which are more heavily weighted to higher weights for the Bonanza Black Spruce site. The other two sites have very similar average weights. However, the Bonanza Black Spruce site has the lowest sample size, so it is possible that the values for this site differ partially because of the smaller sample. The data also seems to indicate higher weights in male juvenile hares than in female juvenile hares, as the average male weights are consistently higher than the female weights at each site. 
+The Bonanza Black Spruce site seems to have higher average weights than the Bonanza Mature and Bonanza Riparian sites, though this cannot be confirmed without further testing of the significance of these differences. This is evident in the summary statistics table, as well as by the shape of the beeswarm distributions, which are more heavily weighted to higher weights for the Bonanza Black Spruce site. The other two sites have very similar average weights. However, the Bonanza Black Spruce site has the lowest sample size, so it is possible that the values for this site differ partially because of the smaller sample. The data also seems to indicate higher weights in male juvenile hares than in female juvenile hares, as the average male weights are consistently higher than the female weights at each site. 
 
 ## Juvenile Weight Comparison
 
@@ -161,7 +159,7 @@ weight_qq #outputs the weight_qq plot
 #Producing organized table of information
 hares_summary %>% kable(
   col.names = c("Sex","Average Weight (g)","Standard Deviation of Weight (g)","Sample Size"), #change column names
-  caption = "Table 2. Summary statistics for male and female juvenile hares.") %>% #add caption
+  caption = "Table 2. Summary statistics for male and female juvenile hares. Data: Bonanza Creek LTER, 2021") %>% #add caption
   kable_styling(bootstrap_options = "striped", full_width = FALSE) #set visual preferences 
 ```
 
@@ -190,7 +188,7 @@ weight_t <- t.test(female_weights, male_weights) #run unpaired two sample t test
   
 ```
 
-The mean weight for male juvenile hares (`r hares_summary$mean_weight2[2]` g) is `r dif_means` g greater than that for female juvenile hares (`r hares_summary$mean_weight2[2]` g). The effect size for the means is small (Cohen's d = `r round(weight_cohen$estimate,2)`) and the difference in means is significant (two-sample t-test, t = `r round(weight_t$statistic,2)`, p = `r round(weight_t$p.value,3)`).
+The mean weight for male juvenile hares (`r hares_summary$mean_weight2[2]` g $\pm$ `r hares_summary$sd_weight2[2]` g) is `r dif_means` g greater than that for female juvenile hares (`r hares_summary$mean_weight2[1]` g $\pm$ `r hares_summary$sd_weight2[1]` g). The effect size for the means is small (Cohen's d = `r round(weight_cohen$estimate,2)`) and the difference in means is significant (two-sample t-test, t = `r round(weight_t$statistic,2)`, p = `r round(weight_t$p.value,3)`).
 
 ## Juvenile Weight and Hind Foot Length
 
@@ -199,8 +197,8 @@ ggplot(data = hares, aes(x = hindft, y = weight)) + #make a plot of weight vs. h
   geom_point() + #scatter plot
   theme_bw() + #add a theme
   geom_smooth(method = "lm") + #add a linear regression line
-  labs(x = "Hind Foot Length (mm)", y = "Weight (g)", title = "Juvenile Hare Weight versus Hind Foot Length",
-       caption = "Figure 3. Juvenile hare weight versus hind foot length. The juvenile hares' hind foot length \n is plotted on the x axis in millimeters, and their weights in grams are plotted on the y axis.") + #add labels and a caption
+  labs(x = "Hind Foot Length (mm)", y = "Weight (g)",
+       caption = "Figure 3. Juvenile hare weight versus hind foot length. The juvenile hares' hind foot length is plotted on the x axis \n in millimeters, and their weights in grams are plotted on the y axis. Data: Bonanza Creek LTER, 2021") + #add labels and a caption
   theme(plot.caption = element_text(hjust=0.5)) #center the caption
 ```
 
@@ -223,9 +221,10 @@ extract_eq(model = hare_lm, use_coefs = TRUE) #return the model equation in LaTe
 #Get Pearson's R correlation
 hare_pearson_test <- cor.test(hares$hindft, hares$weight) 
 hares_pearson_r <- hare_pearson_test$estimate #pull out the pearson's r value
+hare_pearson_tidy <- tidy(hare_pearson_test)
 ```
 
-The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. This regression model has an R^2 value of `r round(hare_lm_glance$r.squared,3)`, which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(hares_pearson_r,2)` indicating that the weight of a hare is moderately influenced by its hind foot length. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence due to the low R^2 and moderate Pearson's r correlation values, and the limitations to the linear regression model.
+The output of this linear regression indicates that on average, for every 1 mm increase in hind foot length, weight increases by `r round(hare_lm$coefficients[2],1)` g. The y intercept of the formula does not have any inherent meaning in this case. This regression model has an R^2^ value of `r round(hare_lm_glance$r.squared,3)` (p < 0.001), which means that `r 100*round(hare_lm_glance$r.squared,3)`% of the variance in weight is predictable from hind foot length. The Pearson's r correlation for the model is `r round(hares_pearson_r,2)` (p < 0.001). indicating that the weight of a hare is moderately influenced by its hind foot length. The assumption of homoscedasticity may be a concern for this linear regression model because the residuals appear to be smaller at first and then larger as hind foot length increases, indicating inconsistent residuals. Therefore, it is possible that these variables are slightly linearly related, but there is also reason to be skeptical of their dependence due to the low R^2^ and moderate Pearson's r correlation values, and the limitations to the linear regression model.
 
 # Summary
 
